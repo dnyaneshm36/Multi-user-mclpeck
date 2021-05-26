@@ -3,5 +3,3 @@ public class App {
         System.out.println("Hello, World!");
     }
 }
-
-git config --global user.email 'dnyaneshm36@gmail.com'
