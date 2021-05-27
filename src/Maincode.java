@@ -34,21 +34,21 @@ public class Maincode {
         } 
         return hexString.toString(); 
     }
-    //H1: {0,1}*→G1*
-    static Element hash1(String str,Pairing pairing)
-    {
-        String shastring = "";
-        try {
-          shastring = toHexString(getSHA(str));                                      //generate the sha256 output for string 
-        } catch (NoSuchAlgorithmException e) {
-          System.out.println(" No such Algorithm exception occurred ");
-          e.printStackTrace();
+        //H1: {0,1}*→G1*
+        static Element hash1(String str,Pairing pairing)
+        {
+            String shastring = "";
+            try {
+            shastring = toHexString(getSHA(str));                                      //generate the sha256 output for string 
+            } catch (NoSuchAlgorithmException e) {
+            System.out.println(" No such Algorithm exception occurred ");
+            e.printStackTrace();
+            }
+            byte [] shatringbyte = shastring.getBytes();                                // converting it into bytes.
+            
+            Element g1 = pairing.getG1().newElement().setFromHash(shatringbyte, 0, shatringbyte.length);             // setting g1 element from bytes.
+            return g1.duplicate();                                                      // to make deep copy used duplicate.
         }
-        byte [] shatringbyte = shastring.getBytes();                                // converting it into bytes.
-        
-        Element g1 = pairing.getG1().newElement().setFromHash(shatringbyte, 0, shatringbyte.length);             // setting g1 element from bytes.
-        return g1.duplicate();                                                      // to make deep copy used duplicate.
-    }
 
         //H2: {0,1}*→G1*
         static Element hash2(String str,Pairing pairing)
@@ -65,7 +65,30 @@ public class Maincode {
             Element g1 = pairing.getG1().newElement().setFromHash(shatringbyte, 0, shatringbyte.length);             // setting g1 element from bytes.
             return g1.duplicate();                                                      // to make deep copy used duplicate.
         }
-
+        // H0  {0, 1}∗ × G1 → Zn∗
+        static Element hash0(String str, Pairing pairing,Element g1)
+        {
+            Element g1str = hash1(str, pairing).duplicate();
+            Element mul = g1str.mul(g1);
+            System.out.println( "---------- --------\n"+ mul);
+            byte mulbyte[] = mul.toBytes();
+            Element bytezn = pairing.getZr().newElement().setFromHash(mulbyte, 0, mulbyte.length);
+            System.out.println( " filllal reusl t is \n"+ bytezn);
+            return bytezn.duplicate();
+        }
+        // ℎ3 ∶ {0, 1}∗ × G1 × G1 × G1 → Zn* 
+        static Element hash3(String str, Pairing pairing,Element g1one, Element g1two, Element g1three)
+        {
+            Element g1str = hash1(str, pairing).duplicate();
+            Element multi = g1str.mul(g1one);
+            multi.mul(g1two);
+            multi.mul(g1three);
+            System.out.println( "---------- --------\n"+ multi);
+            byte mulbyte[] = multi.toBytes();
+            Element bytezn = pairing.getZr().newElement().setFromHash(mulbyte, 0, mulbyte.length);
+            System.out.println( " filllal reusl t is \n"+ bytezn);
+            return bytezn.duplicate();
+        }
     public static void main(String[] args) throws Exception {
 
         // int rBits = 160;                                                                      // this code generater params1.txt file
