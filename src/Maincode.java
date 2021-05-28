@@ -1,11 +1,16 @@
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 import it.unisa.dia.gas.jpbc.Element;
 import it.unisa.dia.gas.jpbc.Pairing;
 import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
+
 
 public class Maincode {
     public static byte[] getSHA(String input) throws NoSuchAlgorithmException
@@ -128,6 +133,82 @@ public class Maincode {
         Element gpub = g.duplicate();
         gpub.mulZn(s); 
 
+
         
+        // Extract-Partial-Private-Key
+
+
+        int m = 5;
+        ArrayList<String > receiverId = new ArrayList<String>();
+        String id = "receiver1";
+        receiverId.add(id);
+         id = "receiver2";
+         receiverId.add(id);
+         id = "receiver3";
+         receiverId.add(id);
+         id = "receiver4";
+         receiverId.add(id);
+         id = "receiver5";
+         receiverId.add(id);
+
+        ArrayList<PartialPrivatekey> receiversPartialPrivatekeys = new ArrayList<PartialPrivatekey>();
+
+        String data = "";                                                   // read the value of q from the param1.txt
+
+        try {                 // taking q from param
+            File myObj = new File("params1.txt");
+            Scanner myReader = new Scanner(myObj);
+            data = myReader.nextLine();
+            data = myReader.nextLine();
+            data = data.substring(2);     
+            myReader.close();
+            } catch (FileNotFoundException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+        String str = data;
+        BigInteger q = new BigInteger(str);
+
+        for( int i = 0 ;i< m ; i++)
+        {
+            Element Si   = pairing.getZr().newRandomElement();
+            Element Ti = g.powZn(Si);
+            Element alphai = hash0(receiverId.get(i), pairing, Ti).duplicate();
+            Element ai = alphai.duplicate();
+            alphai.mul(s);
+            alphai.add(Si);
+            String formod = alphai.toString();
+            BigInteger formodiBigInteger = new BigInteger(formod);
+            formodiBigInteger = formodiBigInteger.mod(q);
+            Element Di = pairing.getZr().newRandomElement();
+            Di.set(formodiBigInteger);
+            PartialPrivatekey temp = new PartialPrivatekey(Si,Ti,Di,ai);
+            receiversPartialPrivatekeys.add(temp);
+        }
+
+        //Set-Secret-Value
+
+        ArrayList<SecreteKey> receiversSecreteKeys = new ArrayList<SecreteKey>();
+
+        for (int i = 0 ;i< m ;i++)
+        {
+            Element Xi = pairing.getZr().newRandomElement();
+            Element Di = receiversPartialPrivatekeys.get(i).getDi();
+            SecreteKey temp = new SecreteKey(Xi, Di);
+            receiversSecreteKeys.add(temp);
+
+        }
+
+        // Set-Public-Key
+
+        ArrayList<PublicKey> receiversPublicKeys = new ArrayList<PublicKey>();
+        for (int i = 0 ;i< m ;i++)
+        {
+            Element Yi = pairing.getZr().newRandomElement();
+            Element Ti = receiversPartialPrivatekeys.get(i).getTi();
+            SecreteKey temp = new SecreteKey(Yi, Ti);
+            receiversSecreteKeys.add(temp);
+
+        }
     }
 }
