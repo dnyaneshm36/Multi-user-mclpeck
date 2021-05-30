@@ -6,9 +6,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.concurrent.DelayQueue;
-
-import org.w3c.dom.css.ElementCSSInlineStyle;
 
 import it.unisa.dia.gas.jpbc.Element;
 import it.unisa.dia.gas.jpbc.Pairing;
@@ -209,8 +206,8 @@ public class Maincode {
         {
             Element Yi = pairing.getZr().newRandomElement();
             Element Ti = receiversPartialPrivatekeys.get(i).getTi();
-            SecreteKey temp = new SecreteKey(Yi, Ti);
-            receiversSecreteKeys.add(temp);
+            PublicKey temp = new PublicKey(Yi, Ti);
+            receiversPublicKeys.add(temp);
 
         }
 
@@ -247,7 +244,7 @@ public class Maincode {
         Element A = g.duplicate();
         A.powZn(r);
 
-        for (int i = 0 ;i< m ;i++)
+        for (int i = 0 ;i < m ;i++)
         {
             String ids = receiverId.get(i);
             Element Yj = receiversPublicKeys.get(i).getYi();
@@ -341,7 +338,33 @@ public class Maincode {
 
 
         // Test()
-        
 
+        Element prod_cj= Cjs.get(0).duplicate();
+        
+        for ( int i = 1 ; i< Cjs.size();i++)
+        {
+            prod_cj.mul(Cjs.get(i));
+        }
+
+        Element  leftpair = pairing.pairing(Tj1, prod_cj);
+
+        Element  right_first_pair = pairing.pairing(A, Tj2);
+
+        for (int i = 0 ;i< m ;i++)
+        {
+            Element Bj = Bjs.get(i);
+            Element right_second_pair = pairing.pairing(Bj, Tj3);
+            Element mulpair = right_first_pair.duplicate();
+            mulpair.mul(right_second_pair);
+
+            if(mulpair.isEqual(leftpair))
+            {
+                System.out.println("True , ---  1  index "+i);
+            }
+            else
+            {
+                System.out.println("False , ---  0  index "+i);
+            }
+        }
     }
 }
