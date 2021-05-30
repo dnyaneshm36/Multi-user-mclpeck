@@ -6,6 +6,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.concurrent.DelayQueue;
 
 import org.w3c.dom.css.ElementCSSInlineStyle;
 
@@ -283,5 +284,64 @@ public class Maincode {
             Ci.mul(Fi);
             Cjs.add(Ci);
         }
+
+
+        // Trapdoor
+
+        // let j is receiver j = 2 
+        // third receiver secrete key is used int the program.
+        int j = 2;
+
+        int l = 4;
+        ArrayList<String> Searchingwords = new ArrayList<String>();
+        word = "abc";
+        Searchingwords.add(word);
+        word = "first";
+        Searchingwords.add(word);
+        word = "covid";
+        Searchingwords.add(word);
+        word = "another";
+        Searchingwords.add(word);
+
+        Element t = pairing.getZr().newElement();   
+        Element Tj1 = g.duplicate();
+        Tj1.powZn(t);
+
+        Element multiplcation_hi =hash1(Searchingwords.get(0), pairing);;
+        Element multiplcation_fi = hash2(Searchingwords.get(0),pairing);
+        for ( int  i = 1 ;i< l ;i++)
+        {
+            
+            Element Hi = hash1(Searchingwords.get(i), pairing);
+            Element Fi = hash2(Searchingwords.get(i),pairing);
+
+            multiplcation_hi.mul(Hi);
+            multiplcation_fi.mul(Fi);
+        } 
+        Element Tj2 = multiplcation_hi.duplicate();
+        Tj2.powZn(t);
+        String idofj = receiverId.get(j);
+        Element Yj = receiversPublicKeys.get(j).getYi();
+        Element Tj = receiversPublicKeys.get(j).getTi();
+        Element betaj = hash3(idofj, pairing, gpub, Yj, Tj);
+
+        Element Dj = receiversSecreteKeys.get(j).getDi();
+        Element Xj = receiversSecreteKeys.get(j).getXi();
+
+        Element Denomenator = betaj.duplicate();
+        Denomenator.mul(Xj);
+        Denomenator.add(Dj);
+
+        Element pow = t.duplicate();
+        pow.div(Denomenator);
+
+        Element Tj3 = multiplcation_fi.duplicate();
+        Tj3.powZn(pow);
+
+
+
+        // Test()
+        
+
     }
 }
